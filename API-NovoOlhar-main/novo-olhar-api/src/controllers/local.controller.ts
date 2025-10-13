@@ -1,0 +1,5 @@
+import { Request, Response } from 'express';
+import prisma from '../prisma/client';
+export async function listLocais(req: Request, res: Response) { try { const locais = await prisma.local.findMany({ include: { categoria: true, gestor: { select: { id_gestor: true, nome: true, email: true } } } }); return res.json(locais); } catch (err) { console.error(err); return res.status(500).json({ error: 'Erro ao listar locais' }); } }
+export async function getLocal(req: Request, res: Response) { try { const id = Number(req.params.id); const local = await prisma.local.findUnique({ where: { id_local: id }, include: { categoria: true, gestor: true } }); if (!local) return res.status(404).json({ error: 'Local não encontrado' }); return res.json(local); } catch (err) { console.error(err); return res.status(500).json({ error: 'Erro ao obter local' }); } }
+export async function createLocal(req: Request, res: Response) { try { const data = req.body; const local = await prisma.local.create({ data }); return res.status(201).json(local); } catch (err:any) { console.error(err); return res.status(500).json({ error: err.message || 'Erro ao criar local' }); } }
