@@ -145,6 +145,21 @@ src/
 
 ---
 
+## 🧑 Usuário inicial
+
+ const senhaHash = await bcrypt.hash("admin123", 10);
+
+  const gestor = await prisma.gestor.create({
+    data: {
+      nome: "Administrador Geral",
+      email: "admin@novo-olhar.com",
+      telefone: "(27) 99999-9999",
+      data_nascimento: new Date("1990-01-01"),
+      cpf: "12345678900",
+      senha: senhaHash, 
+    },
+  });
+
 ## 🌍 Licença
 
 Código aberto — uso livre para fins acadêmicos e sociais.

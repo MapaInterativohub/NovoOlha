@@ -1,6 +1,11 @@
 import { Router } from "express";
-import { listLocais, getLocal, createLocal } from "../controllers/local.controller";
-import { ensureAuth } from "../middleware/auth";
+import {
+  listLocais,
+  getLocal,
+  createLocal,
+  updateLocal,
+  deleteLocal,
+} from "../controllers/local.controller";
 
 const router = Router();
 
@@ -8,20 +13,20 @@ const router = Router();
  * @swagger
  * tags:
  *   name: Locais
- *   description: Rotas para gerenciamento dos pontos de apoio (locais)
+ *   description: Gerenciamento dos pontos de apoio (locais)
  */
 
 /**
  * @swagger
  * /api/locais:
  *   get:
+ *     summary: Lista todos os locais cadastrados
  *     tags: [Locais]
- *     description: Retorna todos os locais cadastrados no sistema, incluindo informações da categoria e gestor.
  *     responses:
  *       200:
- *         description: Lista de locais retornada com sucesso.
+ *         description: Lista de locais retornada com sucesso
  *       500:
- *         description: Erro ao listar locais.
+ *         description: Erro ao listar locais
  */
 router.get("/", listLocais);
 
@@ -29,23 +34,22 @@ router.get("/", listLocais);
  * @swagger
  * /api/locais/{id}:
  *   get:
+ *     summary: Busca um local específico
  *     tags: [Locais]
- *     description: Retorna um local específico pelo seu ID.
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         example: 1
- *         description: ID do local desejado.
+ *         description: ID do local
  *     responses:
  *       200:
- *         description: Dados do local retornados com sucesso.
+ *         description: Local encontrado com sucesso
  *       404:
- *         description: Local não encontrado.
+ *         description: Local não encontrado
  *       500:
- *         description: Erro ao buscar o local.
+ *         description: Erro ao buscar local
  */
 router.get("/:id", getLocal);
 
@@ -53,90 +57,159 @@ router.get("/:id", getLocal);
  * @swagger
  * /api/locais:
  *   post:
+ *     summary: Cria um novo local
  *     tags: [Locais]
- *     security:
- *       - bearerAuth: []
- *     description: Cria um novo local de apoio. É necessário estar autenticado com um token JWT.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - nome
- *               - id_categoria
- *               - id_gestor
- *               - cidade
- *               - estado
  *             properties:
  *               nome:
  *                 type: string
- *                 example: Centro de Acolhimento Luz do Amanhã
+ *                 description: Nome do local
  *               descricao:
  *                 type: string
- *                 example: Oferece suporte psicológico e jurídico gratuito.
+ *                 description: Descrição detalhada do local
  *               telefone:
  *                 type: string
- *                 example: "1130225566"
+ *                 description: Telefone de contato
  *               email:
  *                 type: string
- *                 example: contato@luzdoamanha.org
+ *                 description: E-mail de contato
  *               imagem:
  *                 type: string
- *                 example: "https://placehold.co/400x200"
- *               latitude:
- *                 type: number
- *                 example: -23.5489
- *               longitude:
- *                 type: number
- *                 example: -46.6388
+ *                 description: URL da imagem do local
  *               numero:
  *                 type: string
- *                 example: "150"
+ *                 description: Número do endereço
  *               complemento:
  *                 type: string
- *                 example: "Sala 3"
- *               cidade:
- *                 type: string
- *                 example: "São Paulo"
- *               estado:
- *                 type: string
- *                 example: "SP"
- *               bairro:
- *                 type: string
- *                 example: "Centro"
- *               rua:
- *                 type: string
- *                 example: "Av. Liberdade"
+ *                 description: Complemento do endereço
  *               cep:
  *                 type: string
- *                 example: "01002-000"
+ *                 description: CEP do local
+ *               rua:
+ *                 type: string
+ *                 description: Rua do local
+ *               bairro:
+ *                 type: string
+ *                 description: Bairro do local
+ *               cidade:
+ *                 type: string
+ *                 description: Cidade do local
+ *               estado:
+ *                 type: string
+ *                 description: "Sigla do estado (ex: ES)"
+ *               latitude:
+ *                 type: number
+ *                 format: float
+ *                 description: Latitude geográfica
+ *               longitude:
+ *                 type: number
+ *                 format: float
+ *                 description: Longitude geográfica
  *               id_categoria:
  *                 type: integer
- *                 example: 1
+ *                 description: ID da categoria vinculada
  *               id_gestor:
  *                 type: integer
- *                 example: 1
+ *                 description: ID do gestor criador
  *     responses:
  *       201:
- *         description: Local criado com sucesso.
+ *         description: Local criado com sucesso
  *       400:
- *         description: Dados inválidos ou incompletos.
- *       401:
- *         description: Token JWT ausente ou inválido.
+ *         description: Dados inválidos
  *       500:
- *         description: Erro ao criar local.
+ *         description: Erro ao criar local
  */
-router.post("/", ensureAuth, createLocal);
+router.post("/", createLocal);
+
+/**
+ * @swagger
+ * /api/locais/{id}:
+ *   put:
+ *     summary: Atualiza as informações de um local existente
+ *     tags: [Locais]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do local a ser atualizado
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nome:
+ *                 type: string
+ *               descricao:
+ *                 type: string
+ *               telefone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               imagem:
+ *                 type: string
+ *               numero:
+ *                 type: string
+ *               complemento:
+ *                 type: string
+ *               cep:
+ *                 type: string
+ *               rua:
+ *                 type: string
+ *               bairro:
+ *                 type: string
+ *               cidade:
+ *                 type: string
+ *               estado:
+ *                 type: string
+ *                 description: "Sigla do estado (ex: ES)"
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               id_categoria:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Local atualizado com sucesso
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Local não encontrado
+ *       500:
+ *         description: Erro ao atualizar local
+ */
+router.put("/:id", updateLocal);
+
+/**
+ * @swagger
+ * /api/locais/{id}:
+ *   delete:
+ *     summary: Exclui um local específico
+ *     tags: [Locais]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do local a ser excluído
+ *     responses:
+ *       200:
+ *         description: Local excluído com sucesso
+ *       404:
+ *         description: Local não encontrado
+ *       500:
+ *         description: Erro ao excluir local
+ */
+router.delete("/:id", deleteLocal);
 
 export default router;
-
-/*import { Router } from 'express';
-import { listLocais, getLocal, createLocal } from '../controllers/local.controller';
-import { ensureAuth } from '../middleware/auth';
-const router = Router();
-router.get('/', listLocais);
-router.get('/:id', getLocal);
-router.post('/', ensureAuth, createLocal);
-export default router;*/

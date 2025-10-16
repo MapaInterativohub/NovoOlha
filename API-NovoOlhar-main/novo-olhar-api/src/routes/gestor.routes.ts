@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createGestor, listGestores, alterarSenha } from "../controllers/gestor.controller";
+import { createGestor, listGestores, alterarSenha, deleteGestor } from "../controllers/gestor.controller";
 import { ensureAuth } from "../middleware/auth";
 
 
@@ -112,6 +112,29 @@ router.get("/", ensureAuth, listGestores);
  *         description: Erro interno ao alterar senha.
  */
 router.put("/alterar-senha", ensureAuth, alterarSenha);
+
+/**
+ * @swagger
+ * /api/gestores/{id}:
+ *   delete:
+ *     tags: [Gestores]
+ *     summary: Exclui um gestor pelo ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: ID do gestor
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Gestor excluído com sucesso
+ *       400:
+ *         description: Não é possível excluir gestor com dependências
+ *       404:
+ *         description: Gestor não encontrado
+ */
+router.delete("/:id", deleteGestor);
 
 
 

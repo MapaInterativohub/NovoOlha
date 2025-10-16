@@ -28,7 +28,8 @@ export function ensureAuth(req: AuthRequest, res: Response, next: NextFunction) 
     const decoded = jwt.verify(token, JWT_SECRET) as any;
 
     // Aqui está o ajuste importante:
-    req.gestorId = decoded.id_gestor;
+   req.gestorId = decoded.id_gestor || decoded.id;
+
 
     return next();
   } catch (err) {

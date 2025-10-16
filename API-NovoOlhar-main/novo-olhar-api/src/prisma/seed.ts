@@ -1,86 +1,111 @@
-import prisma from '../prisma/client';
-import bcrypt from 'bcryptjs';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+
+const prisma = new PrismaClient();
 
 async function main() {
-  const hashed = await bcrypt.hash('senhaSegura123', 10);
+  console.log("🧹 Limpando banco de dados...");
+  await prisma.carrossel.deleteMany();
+  await prisma.local.deleteMany();
+  await prisma.categoria.deleteMany();
+  await prisma.gestor.deleteMany();
+
+  console.log("👤 Criando gestor admin...");
+  const senhaHash = await bcrypt.hash("admin123", 10);
+
   const gestor = await prisma.gestor.create({
     data: {
-      nome: 'Mariana Alves',
-      email: 'admin@novoolhar.com',
-      telefone: '11988887777',
-      data_nascimento: new Date('1990-03-14'),
-      cpf: '12345678900',
-      senha: hashed
-    }
+      nome: "Administrador Geral",
+      email: "admin@novo-olhar.com",
+      telefone: "(27) 99999-9999",
+      data_nascimento: new Date("1990-01-01"),
+      cpf: "12345678900",
+      senha: senhaHash, // ✅ campo obrigatório agora incluído
+    },
   });
 
-  const cat1 = await prisma.categoria.create({ data: { nome: 'Centro de Apoio Social', descricao: 'Atendimento psicológico e assistencial' } });
-  const cat2 = await prisma.categoria.create({ data: { nome: 'Delegacia da Mulher', descricao: 'Atendimento especializado para mulheres vítimas de violência' } });
+  console.log("🎨 Criando categorias...");
+  await prisma.categoria.createMany({
+    data: [
+      {
+        nome: "Centro de Apoio Social",
+        descricao: "Atendimento psicológico e assistencial",
+        color: "blue",
+      },
+      {
+        nome: "Delegacia da Mulher",
+        descricao: "Atendimento especializado para mulheres vítimas de violência",
+        color: "red",
+      },
+      {
+        nome: "Abrigo Temporário",
+        descricao: "Abrigos e casas de passagem para mulheres em situação de risco",
+        color: "green",
+      },
+      {
+        nome: "Assessoria Jurídica",
+        descricao: "Apoio jurídico gratuito ou acessível",
+        color: "purple",
+      },
+    ],
+  });
 
+  console.log("📍 Criando locais de exemplo...");
   await prisma.local.create({
     data: {
-      nome: 'Centro de Acolhimento Luz do Amanhã',
-      descricao: 'Oferece suporte psicológico e jurídico gratuito.',
-      breve: 'Acolhimento e apoio',
-      telefone: '1130225566',
-      email: 'contato@luzdoamanha.org',
-      imagem: 'https://placehold.co/400x200',
-      latitude: -23.5489,
-      longitude: -46.6388,
-      numero: '150',
-      complemento: 'Sala 3',
-      cidade: 'São Paulo',
-      estado: 'SP',
-      bairro: 'Centro',
-      rua: 'Av. Liberdade',
-      cep: '01002-000',
-      id_categoria: cat1.id_categoria,
-      id_gestor: gestor.id_gestor
-    }
+      nome: "Centro de Apoio Social Margaridas",
+      descricao:
+        "Oferece acolhimento psicológico e jurídico a mulheres em situação de vulnerabilidade.",
+      breve: "Acolhimento e apoio social",
+      telefone: "(27) 99263-2077",
+      email: "apoio@margaridas.org",
+      imagem:
+        "https://images.pexels.com/photos/33777878/pexels-photo-33777878.jpeg",
+      latitude: -20.3369528,
+      longitude: -40.3606059,
+      numero: "258",
+      complemento: "Sala 2",
+      cep: "29140-070",
+      bairro: "Jardim América",
+      rua: "Rua das Margaridas",
+      cidade: "Cariacica",
+      estado: "ES",
+      id_categoria: 1,
+      id_gestor: gestor.id_gestor,
+    },
   });
 
-  await prisma.local.create({
-    data: {
-      nome: 'Casa Refúgio Esperança',
-      descricao: 'Espaço seguro com apoio assistencial 24h.',
-      breve: 'Apoio 24h',
-      telefone: '1145892356',
-      email: 'contato@refugioesperanca.org',
-      imagem: 'https://placehold.co/400x200',
-      latitude: -22.9068,
-      longitude: -43.1729,
-      numero: '250',
-      complemento: 'Próx. à praça central',
-      cidade: 'Rio de Janeiro',
-      estado: 'RJ',
-      bairro: 'Glória',
-      rua: 'Rua da Paz',
-      cep: '20031-050',
-      id_categoria: cat2.id_categoria,
-      id_gestor: gestor.id_gestor
-    }
-  });
-
+  console.log("🖼️ Criando slides de carrossel...");
   await prisma.carrossel.createMany({
     data: [
       {
-        titulo: 'Rede de Apoio em Todo o Brasil',
-        descricao: 'Conecte-se com instituições próximas e seguras.',
-        imagem: 'https://placehold.co/800x400',
+        titulo: "Rede de Apoio em Todo o Brasil",
+        descricao: "Conecte-se com instituições próximas e seguras.",
+        imagem: "https://placehold.co/800x400",
         ordem: 1,
-        id_gestor: gestor.id_gestor
+        ativo: true,
+        id_gestor: gestor.id_gestor,
       },
       {
-        titulo: 'Acolhimento e Informação',
-        descricao: 'Encontre centros de apoio psicológico e jurídico.',
-        imagem: 'https://placehold.co/800x400',
+        titulo: "Empreendedorismo Feminino",
+        descricao: "Transforme suas ideias em negócios de sucesso.",
+        imagem:
+          "https://universo.uniateneu.edu.br/wp-content/uploads/2024/06/Empreendedorismo.jpg",
         ordem: 2,
-        id_gestor: gestor.id_gestor
-      }
-    ]
+        ativo: true,
+        id_gestor: gestor.id_gestor,
+      },
+    ],
   });
 
-  console.log('Seed finalizado');
+  console.log("✅ Seed concluído com sucesso!");
 }
 
-main().catch(e => { console.error(e); process.exit(1); }).finally(async () => { await prisma.$disconnect(); });
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

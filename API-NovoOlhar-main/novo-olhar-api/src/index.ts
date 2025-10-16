@@ -4,16 +4,32 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerSpec from "./swagger";
 
 dotenv.config();
-import categoriaRoutes from './routes/categoria.routes';
-import gestorRoutes from './routes/gestor.routes';
-import localRoutes from './routes/local.routes';
-import carrosselRoutes from './routes/carrossel.routes';
-import authRoutes from './routes/auth.routes';
+import authRoutes from "./routes/auth.routes";
+import gestorRoutes from "./routes/gestor.routes";
+import categoriaRoutes from "./routes/categoria.routes";
+import carrosselRoutes from "./routes/carrossel.routes";
+import localRoutes from "./routes/local.routes";
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Middlewares globais
+app.use(express.json());
+app.use(cors());
+
+// Rotas principais
+app.use("/api/auth", authRoutes);
+app.use("/api/gestores", gestorRoutes);
+app.use("/api/categorias", categoriaRoutes);
+app.use("/api/carrossel", carrosselRoutes);
+app.use("/api/locais", localRoutes); // ✅ Registro da rota de locais
+
+// Documentação Swagger
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

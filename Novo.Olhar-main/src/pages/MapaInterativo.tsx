@@ -23,29 +23,32 @@ const MapaInterativo = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.Marker[]>([]);
 
-  const [loscais, setLocais] = useState([]);
+  const [locais, setLocais] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<any[]>([]);
+
+  // Busca os locais
   const getLocais = () => {
     axios
       .get("http://localhost:3001/api/locais")
       .then((res) => {
-        console.log(res.data);
+        console.log("Locais:", res.data);
         setLocais(res.data);
       })
       .catch((err) => {
-        console.error("Erro na busca", err);
+        console.error("Erro ao buscar locais", err);
       });
   };
 
-  const [categoria, setCategoria] = useState([]);
+  // Busca as categorias
   const getCategorias = () => {
     axios
       .get("http://localhost:3001/api/categorias")
       .then((res) => {
-        console.log(res.data);
-        setLocais(res.data);
+        console.log("Categorias:", res.data);
+        setCategorias(res.data);
       })
       .catch((err) => {
-        console.error("Erro na busca", err);
+        console.error("Erro ao buscar categorias", err);
       });
   };
 
@@ -54,151 +57,39 @@ const MapaInterativo = () => {
     getLocais();
   }, []);
 
-  const categories = [
-    { id: "todos", name: "Todos", color: "gray" },
-    { id: "eventos", name: "Eventos", color: "blue" },
-    { id: "cursos", name: "Cursos", color: "green" },
-    { id: "networking", name: "Networking", color: "purple" },
-    { id: "saude", name: "Saúde", color: "red" },
+  // 🔹 Cria a lista de categorias para os botões de filtro
+  const categoryButtons = [
+    { id_categoria: "todos", nome: "Todos", color: "gray" },
+    ...categorias.map((cat) => ({
+      id_categoria: cat.id_categoria,
+      nome: cat.nome,
+      color: cat.color,
+    })),
   ];
 
-  const locations = [
-    {
-      id: 1,
-      name: "SEBRAE Espírito Santo - Vitória",
-      category: "eventos",
-      address:
-        "Av. Nossa Senhora dos Navegantes, 675 - Enseada do Suá, Vitória - ES",
-      description:
-        "Centro de apoio ao empreendedorismo capixaba com eventos e capacitações",
-      nextEvent: "Workshop de Empreendedorismo Digital - 25/06/2024",
-      distance: "0 km",
-      lat: -20.3155,
-      lng: -40.2849,
-    },
-    {
-      id: 2,
-      name: "UFES - Universidade Federal do ES",
-      category: "cursos",
-      address: "Av. Fernando Ferrari, 514 - Goiabeiras, Vitória - ES",
-      description:
-        "Principal universidade pública do estado com diversos cursos de extensão",
-      nextEvent: "Curso de Gestão de Projetos - 30/06/2024",
-      distance: "5 km",
-      lat: -20.2767,
-      lng: -40.3056,
-    },
-    {
-      id: 3,
-      name: "Porto de Vitória Business Center",
-      category: "networking",
-      address: "Av. Saturnino de Brito, 360 - Praia do Canto, Vitória - ES",
-      description: "Centro empresarial com eventos de networking e coworking",
-      nextEvent: "Happy Hour Empresarial - 27/06/2024",
-      distance: "3 km",
-      lat: -20.2963,
-      lng: -40.2925,
-    },
-    {
-      id: 4,
-      name: "Hospital Santa Rita de Cássia",
-      category: "saude",
-      address:
-        "R. Dr. João Batista Miranda Amaral, 267 - Nazareth, Vitória - ES",
-      description: "Centro de excelência médica com programas de bem-estar",
-      nextEvent: "Palestra sobre Qualidade de Vida - 28/06/2024",
-      distance: "4 km",
-      lat: -20.3089,
-      lng: -40.2942,
-    },
-    {
-      id: 5,
-      name: "Tech Vila Velha Hub",
-      category: "eventos",
-      address:
-        "Av. Luciano das Neves, 2418 - Divino Espírito Santo, Vila Velha - ES",
-      description: "Hub de inovação e tecnologia da Grande Vitória",
-      nextEvent: "Meetup de Desenvolvedores ES - 02/07/2024",
-      distance: "8 km",
-      lat: -20.3272,
-      lng: -40.2925,
-    },
-    {
-      id: 6,
-      name: "FAESA Centro Universitário",
-      category: "cursos",
-      address:
-        "R. Orlando Damasceno Ferreira, 405 - Jardim da Penha, Vitória - ES",
-      description: "Universidade com foco em empreendedorismo e inovação",
-      nextEvent: "MBA em Gestão Empresarial - 01/07/2024",
-      distance: "6 km",
-      lat: -20.2856,
-      lng: -40.3078,
-    },
-    {
-      id: 7,
-      name: "FINDES - Federação das Indústrias do ES",
-      category: "networking",
-      address: "Av. Nossa Senhora da Penha, 2053 - Santa Lúcia, Vitória - ES",
-      description:
-        "Centro de relacionamento empresarial e desenvolvimento industrial",
-      nextEvent: "Fórum da Indústria Capixaba - 03/07/2024",
-      distance: "7 km",
-      lat: -20.2889,
-      lng: -40.3056,
-    },
-    {
-      id: 8,
-      name: "Centro Médico Rede Vitória",
-      category: "saude",
-      address: "Av. Américo Buaiz, 501 - Enseada do Suá, Vitória - ES",
-      description: "Complexo médico com programas de saúde ocupacional",
-      nextEvent: "Workshop de Saúde Mental no Trabalho - 29/06/2024",
-      distance: "2 km",
-      lat: -20.3167,
-      lng: -40.2889,
-    },
-    {
-      id: 9,
-      name: "Cachoeiro Business Center",
-      category: "eventos",
-      address:
-        "Av. Francisco Lacerda de Aguiar, 200 - Guandu, Cachoeiro de Itapemirim - ES",
-      description: "Centro empresarial do sul do estado",
-      nextEvent: "Seminário de Agronegócios - 05/07/2024",
-      distance: "135 km",
-      lat: -20.8483,
-      lng: -41.1133,
-    },
-    {
-      id: 10,
-      name: "IFES Campus Linhares",
-      category: "cursos",
-      address: "Av. Filogônio Peixoto, 2220 - Aviso, Linhares - ES",
-      description: "Instituto Federal com cursos técnicos e superiores",
-      nextEvent: "Curso de Automação Industrial - 08/07/2024",
-      distance: "140 km",
-      lat: -19.3911,
-      lng: -40.0719,
-    },
-  ];
-
-  const filteredLocations = locations.filter((location) => {
+  // 🔹 Filtragem de locais
+  const filteredLocations = locais.filter((local) => {
     const matchesCategory =
-      selectedCategory === "todos" || location.category === selectedCategory;
+      selectedCategory === "todos" ||
+      local.id_categoria === selectedCategory ||
+      local.categoria?.id_categoria === selectedCategory;
     const matchesSearch =
-      location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      location.description.toLowerCase().includes(searchTerm.toLowerCase());
+      local.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      local.descricao.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const getCategoryColor = (category: string) => {
-    const cat = categories.find((c) => c.id === category);
-    return cat ? cat.color : "gray";
+  // 🔹 Retorna a cor da categoria de um local
+  const getCategoryColor = (local) => {
+    const categoria =
+      local.categoria ||
+      categorias.find((c) => c.id_categoria === local.id_categoria);
+    return categoria ? categoria.color : "gray";
   };
 
-  const getMarkerIcon = (category: string) => {
-    const color = getCategoryColor(category);
+  // 🔹 Ícones personalizados do mapa
+  const getMarkerIcon = (local) => {
+    const color = getCategoryColor(local);
     const colorMap: { [key: string]: string } = {
       blue: "#3B82F6",
       green: "#10B981",
@@ -217,52 +108,49 @@ const MapaInterativo = () => {
     });
   };
 
+  // 🔹 Inicializa o mapa
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Initialize map centered on Espírito Santo
     mapRef.current = L.map(mapContainerRef.current).setView(
       [-20.2976, -40.2958],
       10
     );
 
-    // Add tile layer
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
     }).addTo(mapRef.current);
 
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
+      mapRef.current?.remove();
+      mapRef.current = null;
     };
   }, []);
 
+  // 🔹 Atualiza os marcadores no mapa
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Clear existing markers
-    markersRef.current.forEach((marker) => {
-      mapRef.current?.removeLayer(marker);
-    });
+    markersRef.current.forEach((marker) =>
+      mapRef.current?.removeLayer(marker)
+    );
     markersRef.current = [];
 
-    // Add filtered markers
-    filteredLocations.forEach((location) => {
-      const marker = L.marker([location.lat, location.lng], {
-        icon: getMarkerIcon(location.category),
+    filteredLocations.forEach((local) => {
+      const marker = L.marker([local.latitude, local.longitude], {
+        icon: getMarkerIcon(local),
       }).addTo(mapRef.current!);
 
       const popupContent = `
         <div class="p-3 min-w-[250px]">
-          <h3 class="font-bold text-lg mb-2">${location.name}</h3>
-          <p class="text-sm text-gray-600 mb-2">${location.address}</p>
-          <p class="text-sm mb-2">${location.description}</p>
-          <div class="flex items-center text-green-600 text-sm">
-            <span class="font-medium">${location.nextEvent}</span>
+          <h3 class="font-bold text-lg mb-2">${local.nome}</h3>
+          <p class="text-sm text-gray-600 mb-2">${local.rua}, ${
+        local.numero
+      } - ${local.bairro}</p>
+          <p class="text-sm mb-2">${local.descricao}</p>
+          <div class="flex items-center text-sm text-gray-500">
+            ${local.telefone ? `📞 ${local.telefone}` : ""}
           </div>
-          <div class="mt-2 text-xs text-gray-500">${location.distance}</div>
         </div>
       `;
 
@@ -270,7 +158,6 @@ const MapaInterativo = () => {
       markersRef.current.push(marker);
     });
 
-    // Fit map to show all markers if there are any
     if (markersRef.current.length > 0) {
       const group = new L.FeatureGroup(markersRef.current);
       mapRef.current.fitBounds(group.getBounds().pad(0.1));
@@ -281,196 +168,92 @@ const MapaInterativo = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 mb-6">
-              <Map className="h-10 w-10 text-white" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Mapa Interativo - Espírito Santo
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Descubra oportunidades de crescimento profissional e empresarial
-              no estado do Espírito Santo. Conecte-se com instituições, eventos
-              e recursos da sua região.
-            </p>
+      {/* Hero */}
+      <section className="pt-24 pb-10 text-center">
+        <h1 className="text-4xl font-bold text-gray-800">
+          Mapa Interativo - Espírito Santo
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Veja instituições, centros de apoio e locais de atendimento no ES
+        </p>
+      </section>
+
+      {/* Filtros */}
+      <section className="px-6 pb-6 border-b border-gray-200">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+          {/* Busca */}
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              placeholder="Buscar locais..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+
+          {/* Categorias */}
+          <div className="flex flex-wrap gap-2">
+            {categoryButtons.map((cat) => (
+              <button
+                key={cat.id_categoria}
+                onClick={() => setSelectedCategory(cat.id_categoria)}
+                className={`px-4 py-2 rounded-lg font-medium transition ${
+                  selectedCategory === cat.id_categoria
+                    ? `bg-${cat.color}-500 text-white`
+                    : `bg-${cat.color}-100 text-${cat.color}-700 hover:bg-${cat.color}-200`
+                }`}
+              >
+                {cat.nome}
+              </button>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Filters and Search */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar locais no ES..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
+      {/* Mapa e Lista */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+        {/* Mapa */}
+        <div
+          ref={mapContainerRef}
+          className="bg-white rounded-xl shadow-lg h-[500px]"
+        />
 
-            {/* Category Filters */}
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                    selectedCategory === category.id
-                      ? `bg-${category.color}-500 text-white`
-                      : `bg-${category.color}-100 text-${category.color}-700 hover:bg-${category.color}-200`
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* Lista */}
+        <div>
+          <h3 className="text-xl font-bold mb-4 text-gray-800">
+            Locais Encontrados ({filteredLocations.length})
+          </h3>
 
-      {/* Interactive Map and Results */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Interactive Map */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden z-40 h-full">
+          {filteredLocations.map((local) => {
+            const color = getCategoryColor(local);
+            return (
               <div
-                ref={mapContainerRef}
-                className="w-full h-full"
-                style={{ minHeight: "500px" }}
-              />
-            </div>
-
-            {/* Results List */}
-            <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Locais Encontrados no ES ({filteredLocations.length})
-              </h3>
-
-              {filteredLocations.map((location) => {
-                const colorClass = getCategoryColor(location.category);
-                return (
-                  <div
-                    key={location.id}
-                    className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-                    onClick={() => {
-                      if (mapRef.current) {
-                        mapRef.current.setView(
-                          [location.lat, location.lng],
-                          15
-                        );
-                        const marker = markersRef.current.find(
-                          (m) =>
-                            Math.abs(m.getLatLng().lat - location.lat) <
-                              0.001 &&
-                            Math.abs(m.getLatLng().lng - location.lng) < 0.001
-                        );
-                        if (marker) {
-                          marker.openPopup();
-                        }
-                      }
-                    }}
+                key={local.id_local}
+                className="bg-white rounded-xl shadow p-4 mb-4 hover:shadow-lg cursor-pointer"
+                onClick={() => {
+                  mapRef.current?.setView([local.latitude, local.longitude], 15);
+                }}
+              >
+                <div className="flex justify-between mb-2">
+                  <h4 className="font-bold text-gray-800">{local.nome}</h4>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs bg-${color}-100 text-${color}-700`}
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h4 className="text-lg font-bold text-gray-900 mb-2">
-                          {location.name}
-                        </h4>
-                        <div className="flex items-center text-gray-600 mb-2">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          <span className="text-sm">{location.address}</span>
-                        </div>
-                      </div>
-                      <div
-                        className={`px-3 py-1 rounded-full text-xs font-medium bg-${colorClass}-100 text-${colorClass}-700`}
-                      >
-                        {
-                          categories.find((c) => c.id === location.category)
-                            ?.name
-                        }
-                      </div>
-                    </div>
-
-                    <p className="text-gray-600 mb-4">{location.description}</p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-green-600">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        <span className="text-sm font-medium">
-                          {location.nextEvent}
-                        </span>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {location.distance}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {filteredLocations.length === 0 && (
-                <div className="text-center py-12">
-                  <Filter className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                    Nenhum local encontrado
-                  </h3>
-                  <p className="text-gray-500">
-                    Tente ajustar os filtros ou termo de busca
-                  </p>
+                    {local.categoria?.nome ||
+                      categorias.find(
+                        (c) => c.id_categoria === local.id_categoria
+                      )?.nome}
+                  </span>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-500 to-purple-600">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-8">
-            Recursos do Mapa - Espírito Santo
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <MapPin className="h-8 w-8 text-white mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">
-                Localização Precisa no ES
-              </h3>
-              <p className="text-purple-100">
-                Encontre instituições e eventos em todo o estado do Espírito
-                Santo
-              </p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <Calendar className="h-8 w-8 text-white mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">
-                Eventos Capixabas
-              </h3>
-              <p className="text-purple-100">
-                Informações sobre eventos e oportunidades no Espírito Santo
-              </p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <Users className="h-8 w-8 text-white mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">
-                Comunidade Capixaba
-              </h3>
-              <p className="text-purple-100">
-                Conecte-se com profissionais e empresários do ES
-              </p>
-            </div>
-          </div>
+                <p className="text-gray-600 text-sm mb-2">{local.descricao}</p>
+                <p className="text-xs text-gray-500">
+                  📍 {local.rua}, {local.numero} - {local.bairro}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>

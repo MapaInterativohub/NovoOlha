@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/client';
 import bcrypt from 'bcryptjs';
+import { Prisma } from "@prisma/client";
 export async function createGestor(req: Request, res: Response) {
   try {
     const { nome, email, telefone, data_nascimento, cpf, senha } = req.body;
@@ -40,12 +41,10 @@ export const alterarSenha = async (req: AuthRequest, res: Response) => {
 
     const novaHash = await bcrypt.hash(nova_senha, 10);
     await prisma.gestor.update({
-      where: { id_gestor: gestorId },
-      data: {
-        senha: novaHash,
-        senha_temporaria: false,
-      },
-    });
+    where: { id_gestor: req.gestorId },
+    data: { senha: novaHash },
+});
+
 
     return res.status(200).json({ message: "Senha alterada com sucesso." });
   } catch (error) {
@@ -53,3 +52,35 @@ export const alterarSenha = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ error: "Erro interno ao alterar senha." });
   }
 };
+
+export async function deleteGestor(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id)) return res.status(400).json({ error: "ID inválido" });
+
+    // Tenta deletar
+    await prisma.gestor.delete({
+      where: { id_gestor: id },
+    });
+
+    return res.json({ message: "Gestor excluído com sucesso" });
+  } catch (err: any) {
+    console.error("Erro ao excluir gestor:", err);
+
+    // Prisma errors
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      // registro não existe
+      if (err.code === "P2025") {
+        return res.status(404).json({ error: "Gestor não encontrado" });
+      }
+      // foreign key constraint (não permite exclusão)
+      if (err.code === "P2003" || err.code === "P2004") {
+        return res
+          .status(400)
+          .json({ error: "Não é possível excluir gestor com registros relacionados" });
+      }
+    }
+
+    return res.status(500).json({ error: "Erro ao excluir gestor" });
+  }
+}

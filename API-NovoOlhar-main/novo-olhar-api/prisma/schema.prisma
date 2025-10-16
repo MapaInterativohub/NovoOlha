@@ -8,9 +8,10 @@ generator client {
 }
 
 model Categoria {
-  id_categoria Int    @id @default(autoincrement())
-  nome         String
-  descricao    String?
+  id_categoria Int      @id @default(autoincrement())
+  nome         String   @db.VarChar(100)
+  descricao    String?  @db.Text
+  color        String   @db.VarChar(50) 
   locais       Local[]
 }
 
@@ -50,14 +51,18 @@ model Local {
 }
 
 model Carrossel {
-  id_carrossel     Int      @id @default(autoincrement())
-  titulo           String
-  descricao        String?
-  imagem           String?
-  ordem            Int      @default(0)
-  ativo            Boolean  @default(true)
-  data_criacao     DateTime @default(now())
-  data_atualizacao DateTime @updatedAt
-  id_gestor        Int
-  gestor           Gestor   @relation(fields: [id_gestor], references: [id_gestor])
+  id_carrossel      Int       @id @default(autoincrement())
+  titulo            String
+  descricao         String?   // subtítulo
+  imagem            String?
+  ordem             Int       @default(0)
+  ativo             Boolean   @default(true)
+  modulo            String?   // novo campo → identifica o módulo (ex: "mapa-interativo")
+  link              String?   // novo campo → URL associada ao módulo
+  id_gestor         Int
+  data_criacao      DateTime  @default(now())
+  data_atualizacao  DateTime  @updatedAt
+
+  gestor Gestor @relation(fields: [id_gestor], references: [id_gestor])
 }
+

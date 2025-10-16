@@ -72,26 +72,26 @@ const ImageCarousel = () => {
 
   return (
     <div className="relative h-96 md:h-[500px] overflow-hidden rounded-xl shadow-2xl">
-      {images.map((image, index) => (
+      {imagens.map((image, index) => (
         <div
           key={index}
           className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
             index === currentIndex ? "translate-x-0" : "translate-x-full"
           } ${index < currentIndex ? "-translate-x-full" : ""}`}
         >
-          <Link to={image.link} className="block w-full h-full group">
+          <Link to={image.imagem} className="block w-full h-full group">
             <img
-              src={image.url}
-              alt={image.title}
+              src={image.imagem}
+              alt={image.titulo}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent group-hover:from-black/70 transition-colors duration-300"></div>
             <div className="absolute bottom-8 left-8 text-white">
               <h3 className="text-3xl md:text-4xl font-bold mb-2 animate-fade-in group-hover:text-rose-200 transition-colors duration-300">
-                {image.title}
+                {image.titulo}
               </h3>
               <p className="text-lg md:text-xl opacity-90 animate-fade-in group-hover:opacity-100 transition-opacity duration-300">
-                {image.subtitle}
+                {image.descricao}
               </p>
               <div className="mt-4 inline-flex items-center text-rose-200 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <span>Explorar</span>

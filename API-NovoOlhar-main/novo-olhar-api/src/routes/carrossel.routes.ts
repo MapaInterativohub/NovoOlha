@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { listCarrossel, createCarrossel } from "../controllers/carrossel.controller";
 import { ensureAuth } from "../middleware/auth";
+import { deleteCarrossel } from "../controllers/carrossel.controller";
 
 const router = Router();
 
@@ -69,6 +70,30 @@ router.get("/", listCarrossel);
  *         description: Erro ao criar slide.
  */
 router.post("/", ensureAuth, createCarrossel);
+
+/**
+ * @swagger
+ * /api/carrossel/{id}:
+ *   delete:
+ *     tags: [Carrossel]
+ *     description: Remove um slide do carrossel pelo ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID do slide a ser removido
+ *     responses:
+ *       200:
+ *         description: Slide removido com sucesso.
+ *       404:
+ *         description: Slide não encontrado.
+ *       500:
+ *         description: Erro ao remover slide.
+ */
+router.delete("/:id", deleteCarrossel);
+
 
 export default router;
 
