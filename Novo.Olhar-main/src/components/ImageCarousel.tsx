@@ -79,7 +79,8 @@ const ImageCarousel = () => {
             index === currentIndex ? "translate-x-0" : "translate-x-full"
           } ${index < currentIndex ? "-translate-x-full" : ""}`}
         >
-          <Link to={image.imagem} className="block w-full h-full group">
+          <Link to={image.link || "#"} className="block w-full h-full group">
+
             <img
               src={image.imagem}
               alt={image.titulo}
