@@ -25,49 +25,22 @@ const ImageCarousel = () => {
     getImagens();
   }, []);
 
-  const images = [
-    {
-      url: "https://universo.uniateneu.edu.br/wp-content/uploads/2024/06/Empreendedorismo.jpg",
-      title: "Empreendedorismo",
-      subtitle: "Transforme suas ideias em negócios de sucesso",
-      link: "/empreendedorismo",
-    },
-    {
-      url: "https://www.contabeis.com.br/assets/img/news/n_45054_9ba9febf50c076b90b01c75dadd027cc.jpg",
-      title: "Plano de Carreira",
-      subtitle: "Desenvolva sua carreira profissional",
-      link: "/plano-carreira",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=1200&h=600&fit=crop",
-      title: "Ludis",
-      subtitle: "Descubra o poder transformador dos jogos e atividades lúdicas",
-      link: "/ludis",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=600&fit=crop",
-      title: "Mapa Interativo",
-      subtitle: "Explore oportunidades na sua região",
-      link: "/mapa-interativo",
-    },
-  ];
-
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % imagens.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [imagens.length]);
 
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+      prevIndex === 0 ? imagens.length - 1 : prevIndex - 1
     );
   };
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % imagens.length);
   };
 
   return (
@@ -132,7 +105,7 @@ const ImageCarousel = () => {
 
       {/* Dots Indicator */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
-        {images.map((_, index) => (
+        {imagens.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}

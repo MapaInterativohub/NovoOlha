@@ -6,8 +6,8 @@ import html2canvas from "html2canvas";
 
 interface ToolFormProps {
   tool: {
-    name: string;
-    description: string;
+    titulo_modal: string;
+    descricao_modal: string;
     benefits: string;
   };
   onClose: () => void;
@@ -25,11 +25,11 @@ const ToolForm: React.FC<ToolFormProps> = ({ tool, onClose }) => {
   });
 
   useEffect(() => {
-    const savedData = localStorage.getItem(`tool_${tool.name}`);
+    const savedData = localStorage.getItem(`tool_${tool.titulo_modal}`);
     if (savedData) {
       setFormData(JSON.parse(savedData));
     }
-  }, [tool.name]);
+  }, [tool.titulo_modal]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -39,10 +39,10 @@ const ToolForm: React.FC<ToolFormProps> = ({ tool, onClose }) => {
   };
 
   const handleSave = () => {
-    localStorage.setItem(`tool_${tool.name}`, JSON.stringify(formData));
+    localStorage.setItem(`tool_${tool.titulo_modal}`, JSON.stringify(formData));
     toast({
       title: "Dados salvos!",
-      description: `Suas informações para ${tool.name} foram salvas com sucesso.`,
+      description: `Suas informações para ${tool.titulo_modal} foram salvas com sucesso.`,
       duration: 3000,
     });
   };
@@ -104,9 +104,9 @@ const ToolForm: React.FC<ToolFormProps> = ({ tool, onClose }) => {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {tool.name}
+                  {tool.titulo_modal}
                 </h2>
-                <p className="text-gray-600">{tool.description}</p>
+                <p className="text-gray-600">{tool.descricao_modal}</p>
               </div>
               <button
                 onClick={onClose}

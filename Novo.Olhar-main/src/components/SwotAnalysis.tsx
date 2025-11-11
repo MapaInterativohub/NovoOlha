@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { TrendingUp, AlertTriangle, Shield, Target, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import axios from "axios";
 
 const SwotAnalysis = () => {
   const { toast } = useToast();
+
   const [swotData, setSwotData] = useState({
+    titulo: "",
     strengths: [""],
     weaknesses: [""],
     opportunities: [""],
@@ -49,12 +52,44 @@ const SwotAnalysis = () => {
     });
   };
 
+  const [categorias, setCategorias] = useState([]);
+  const categoriasGet = () => {
+    axios.get('http://localhost:3001/api/plano-carreira/swot')
+      .then((res) => {
+        setCategorias(res.data);
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.error(err, "Erro ao obter sections");
+      });
+  };
+
+  useEffect(() => {
+    categoriasGet();
+  }, []);
+
+  useEffect(() => {
+    if (categorias.length > 0) {
+      const item = categorias[0]; // Pega o primeiro objeto retornado da API
+      setSwotData({
+        titulo: item.titulo || "",
+        strengths: item.strengths || [""],
+        weaknesses: item.weaknesses || [""],
+        opportunities: item.opportunities || [""],
+        threats: item.threats || [""],
+      });
+    }
+  }, [categorias]);
+
+  console.log(swotData.strengths)
+
+
   const swotCategories = [
     {
       title: "Forças",
       field: "strengths" as keyof typeof swotData,
       icon: Shield,
-      description: "Pontos fortes internos",
+      description: swotData.strengths,
       color: "from-green-500 to-green-600",
       bgColor: "bg-green-50",
       borderColor: "border-green-200",
@@ -63,7 +98,7 @@ const SwotAnalysis = () => {
       title: "Fraquezas",
       field: "weaknesses" as keyof typeof swotData,
       icon: AlertTriangle,
-      description: "Pontos fracos internos",
+      description: swotData.weaknesses,
       color: "from-red-500 to-red-600",
       bgColor: "bg-red-50",
       borderColor: "border-red-200",
@@ -72,7 +107,7 @@ const SwotAnalysis = () => {
       title: "Oportunidades",
       field: "opportunities" as keyof typeof swotData,
       icon: TrendingUp,
-      description: "Fatores externos positivos",
+      description: swotData.opportunities,
       color: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-50",
       borderColor: "border-blue-200",
@@ -81,7 +116,7 @@ const SwotAnalysis = () => {
       title: "Ameaças",
       field: "threats" as keyof typeof swotData,
       icon: Target,
-      description: "Fatores externos negativos",
+      description: swotData.threats,
       color: "from-orange-500 to-orange-600",
       bgColor: "bg-orange-50",
       borderColor: "border-orange-200",
@@ -145,7 +180,7 @@ const SwotAnalysis = () => {
       <div id="PlanoDeCarreiraSwot">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">Análise SWOT</h3>
+            <h3 className="text-2xl font-bold text-gray-900">{swotData.titulo || "Análise SWOT"}</h3>
             <p className="text-gray-600">
               Análise estratégica da sua carreira e posicionamento profissional
             </p>

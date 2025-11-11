@@ -6,8 +6,8 @@ import html2canvas from "html2canvas";
 
 interface SkillFormProps {
   skill: {
-    name: string;
-    description: string;
+    nome: string;
+    descricao_modal: string;
     importance: string;
   };
   onClose: () => void;
@@ -27,11 +27,11 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose }) => {
   });
 
   useEffect(() => {
-    const savedData = localStorage.getItem(`skill_${skill.name}`);
+    const savedData = localStorage.getItem(`skill_${skill.nome}`);
     if (savedData) {
       setFormData(JSON.parse(savedData));
     }
-  }, [skill.name]);
+  }, [skill.nome]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -41,10 +41,10 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose }) => {
   };
 
   const handleSave = () => {
-    localStorage.setItem(`skill_${skill.name}`, JSON.stringify(formData));
+    localStorage.setItem(`skill_${skill.nome}`, JSON.stringify(formData));
     toast({
       title: "Plano de desenvolvimento salvo!",
-      description: `Seu plano para desenvolver ${skill.name} foi salvo com sucesso.`,
+      description: `Seu plano para desenvolver ${skill.nome} foi salvo com sucesso.`,
       duration: 3000,
     });
   };
@@ -101,9 +101,9 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose }) => {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {skill.name}
+                  {skill.nome}
                 </h2>
-                <p className="text-gray-600 mb-2">{skill.description}</p>
+                <p className="text-gray-600 mb-2">{skill.descricao_modal}</p>
                 <p className="text-sm text-green-600 font-medium">
                   {skill.importance}
                 </p>

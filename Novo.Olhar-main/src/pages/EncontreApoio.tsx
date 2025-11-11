@@ -11,12 +11,14 @@ import {
   Search,
 } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const EncontreApoio = () => {
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [locais, setLocais] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Carrega locais da API ao montar o componente
   useEffect(() => {
@@ -208,8 +210,11 @@ const EncontreApoio = () => {
                         </div>
                       </div>
 
-                      <button className="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-rose-600 hover:to-pink-600 transition-all duration-200">
-                        Entrar em Contato
+                      <button
+                        onClick={() => navigate("/mapa-interativo", { state: { local } })}
+                        className="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-rose-600 hover:to-pink-600 transition-all duration-200"
+                      >
+                        Ver no mapa
                       </button>
                     </div>
                   </div>
