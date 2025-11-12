@@ -57,6 +57,7 @@ const PlanoCarreira = () => {
     secPhases();
     secHabilidadesGet();
     secDestaquesGet();
+    secMenu();
   }, [])
 
   const phases = [
@@ -183,7 +184,7 @@ const PlanoCarreira = () => {
                   : 'text-gray-600 hover:text-green-600'
                   }`}
               >
-                Visão Geral
+                {sectionsMenu[0]?.nome_exibicao}
               </button>
               <button
                 onClick={() => setActiveTab('canvas')}
@@ -193,7 +194,7 @@ const PlanoCarreira = () => {
                   }`}
               >
                 <LucideIcons.Layers className="h-4 w-4 inline mr-2" />
-                Canvas
+                {sectionsMenu[1]?.nome_exibicao}
               </button>
               <button
                 onClick={() => setActiveTab('swot')}
@@ -203,7 +204,7 @@ const PlanoCarreira = () => {
                   }`}
               >
                 <LucideIcons.BarChart3 className="h-4 w-4 inline mr-2" />
-                SWOT
+                {sectionsMenu[2]?.nome_exibicao}
               </button>
             </div>
           </div>
@@ -238,7 +239,8 @@ const PlanoCarreira = () => {
 
               <div className="space-y-8">
                 {sectionsPhases.map((phase, index) => {
-                  const Icon = LucideIcons[phase.icone];
+                  const iconeFormatado = phase.icone.charAt(0).toUpperCase() + phase.icone.slice(1).toLowerCase()
+                  const Icon = LucideIcons[iconeFormatado];
                   return (
                     <div
                       key={phase.titulo}

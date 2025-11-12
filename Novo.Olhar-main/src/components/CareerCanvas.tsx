@@ -191,7 +191,8 @@ const CareerCanvas = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {canvasGet.map((section) => {
             if (section.ativo) {
-              const Icon = LucideIcons[section.icone];
+              const iconeFormatado = section.icone.charAt(0).toUpperCase() + section.icone.slice(1).toLowerCase()
+              const Icon = LucideIcons[iconeFormatado];
               return (
                 <Card
                   key={section.id_canvas}

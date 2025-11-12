@@ -17,25 +17,23 @@ const SwotAnalysis = () => {
     threats: [""],
   });
 
-  const handleItemChange = (
-    category: keyof typeof swotData,
-    index: number,
-    value: string
-  ) => {
+  const handleItemChange = (category, index, value) => {
     setSwotData((prev) => ({
       ...prev,
-      [category]: prev[category].map((item, i) => (i === index ? value : item)),
+      [category]: prev[category].map((item, i) =>
+        i === index ? value : item
+      ),
     }));
   };
 
-  const addItem = (category: keyof typeof swotData) => {
+  const addItem = (category) => {
     setSwotData((prev) => ({
       ...prev,
       [category]: [...prev[category], ""],
     }));
   };
 
-  const removeItem = (category: keyof typeof swotData, index: number) => {
+  const removeItem = (category, index) => {
     if (swotData[category].length > 1) {
       setSwotData((prev) => ({
         ...prev,
@@ -53,14 +51,16 @@ const SwotAnalysis = () => {
   };
 
   const [categorias, setCategorias] = useState([]);
+
   const categoriasGet = () => {
-    axios.get('http://localhost:3001/api/plano-carreira/swot')
+    axios
+      .get("http://localhost:3001/api/plano-carreira/swot")
       .then((res) => {
         setCategorias(res.data);
-        console.log(res.data);
+        console.log("📦 Dados recebidos:", res.data);
       })
       .catch((err) => {
-        console.error(err, "Erro ao obter sections");
+        console.error(err, "Erro ao obter SWOT");
       });
   };
 
@@ -70,24 +70,34 @@ const SwotAnalysis = () => {
 
   useEffect(() => {
     if (categorias.length > 0) {
-      const item = categorias[0]; // Pega o primeiro objeto retornado da API
+      const item = categorias[0];
+
+      // 🧩 Parse dos campos JSON vindos como string
+      const parseArray = (value) => {
+        try {
+          const parsed = JSON.parse(value);
+          return Array.isArray(parsed) ? parsed : [String(parsed)];
+        } catch {
+          return [String(value)];
+        }
+      };
+
       setSwotData({
         titulo: item.titulo || "",
-        strengths: item.strengths || [""],
-        weaknesses: item.weaknesses || [""],
-        opportunities: item.opportunities || [""],
-        threats: item.threats || [""],
+        strengths: item.strengths ? parseArray(item.strengths) : [""],
+        weaknesses: item.weaknesses ? parseArray(item.weaknesses) : [""],
+        opportunities: item.opportunities
+          ? parseArray(item.opportunities)
+          : [""],
+        threats: item.threats ? parseArray(item.threats) : [""],
       });
     }
   }, [categorias]);
 
-  console.log(swotData.strengths)
-
-
   const swotCategories = [
     {
       title: "Forças",
-      field: "strengths" as keyof typeof swotData,
+      field: "strengths",
       icon: Shield,
       description: swotData.strengths,
       color: "from-green-500 to-green-600",
@@ -96,7 +106,7 @@ const SwotAnalysis = () => {
     },
     {
       title: "Fraquezas",
-      field: "weaknesses" as keyof typeof swotData,
+      field: "weaknesses",
       icon: AlertTriangle,
       description: swotData.weaknesses,
       color: "from-red-500 to-red-600",
@@ -105,7 +115,7 @@ const SwotAnalysis = () => {
     },
     {
       title: "Oportunidades",
-      field: "opportunities" as keyof typeof swotData,
+      field: "opportunities",
       icon: TrendingUp,
       description: swotData.opportunities,
       color: "from-blue-500 to-blue-600",
@@ -114,7 +124,7 @@ const SwotAnalysis = () => {
     },
     {
       title: "Ameaças",
-      field: "threats" as keyof typeof swotData,
+      field: "threats",
       icon: Target,
       description: swotData.threats,
       color: "from-orange-500 to-orange-600",
@@ -122,15 +132,15 @@ const SwotAnalysis = () => {
       borderColor: "border-orange-200",
     },
   ];
+
   const gerarPDF = async () => {
     const elemento = document.getElementById("PlanoDeCarreiraSwot");
 
     if (!elemento) {
-      console.error("Elemento #pdf-content não encontrado!");
+      console.error("Elemento #PlanoDeCarreiraSwot não encontrado!");
       return;
     }
 
-    // Cria o canvas a partir do HTML
     const canvas = await html2canvas(elemento, {
       scale: 2,
       useCORS: true,
@@ -139,28 +149,20 @@ const SwotAnalysis = () => {
 
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF({
-      orientation: "landscape", // <-- horizontal
+      orientation: "landscape",
       unit: "mm",
       format: "a4",
     });
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-
-    // 🔲 Defina aqui o tamanho da margem (em milímetros)
-    const margin = 10; // margem de 10mm em cada lado
-
-    // 📐 Calcula largura e altura da imagem dentro da área útil
+    const margin = 10;
     const imgWidth = pageWidth - margin * 2;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    // let position = margin;
-
-    // Se a imagem for maior que a página, quebra automaticamente
     if (imgHeight > pageHeight - margin * 2) {
       let heightLeft = imgHeight;
       let y = margin;
-
       while (heightLeft > 0) {
         pdf.addImage(imgData, "PNG", margin, y, imgWidth, imgHeight);
         heightLeft -= pageHeight - margin * 2;
@@ -168,7 +170,6 @@ const SwotAnalysis = () => {
         if (heightLeft > 0) pdf.addPage();
       }
     } else {
-      // Adiciona a imagem com margem
       pdf.addImage(imgData, "PNG", margin, margin, imgWidth, imgHeight);
     }
 
@@ -180,7 +181,9 @@ const SwotAnalysis = () => {
       <div id="PlanoDeCarreiraSwot">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">{swotData.titulo || "Análise SWOT"}</h3>
+            <h3 className="text-2xl font-bold text-gray-900">
+              {swotData.titulo || "Análise SWOT"}
+            </h3>
             <p className="text-gray-600">
               Análise estratégica da sua carreira e posicionamento profissional
             </p>
@@ -211,7 +214,7 @@ const SwotAnalysis = () => {
                     </div>
                     <div>
                       <span>{category.title}</span>
-                      <p className="text-sm font-normal text-gray-600">
+                      <p className="text-sm font-nomal text-gray-600">
                         {category.description}
                       </p>
                     </div>
@@ -223,19 +226,21 @@ const SwotAnalysis = () => {
                       <div key={index} className="flex space-x-2">
                         <input
                           type="text"
-                          value={item}
-                          onChange={(e) =>
-                            handleItemChange(
-                              category.field,
-                              index,
-                              e.target.value
-                            )
-                          }
+                          // value={item}
+                          // onChange={(e) =>
+                          //   handleItemChange(
+                          //     category.field,
+                          //     index,
+                          //     e.target.value
+                          //   )
+                          // }
                           placeholder={`Adicione um item em ${category.title.toLowerCase()}...`}
                           className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <button
-                          onClick={() => removeItem(category.field, index)}
+                          onClick={() =>
+                            removeItem(category.field, index)
+                          }
                           className="text-red-500 hover:text-red-700 p-2"
                           disabled={swotData[category.field].length === 1}
                         >

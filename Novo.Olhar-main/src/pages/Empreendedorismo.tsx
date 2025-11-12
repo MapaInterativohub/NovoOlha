@@ -133,7 +133,9 @@ const Empreendedorismo = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             {
               sectionsGet.map((section, index) => {
-                const Icon = LucideIcons[section.icone];
+                const iconeFormatado = section.icone.charAt(0).toUpperCase() + section.icone.slice(1).toLowerCase()
+                const Icon = LucideIcons[iconeFormatado];
+                console.log(iconeFormatado)
                 return (
                   <div
                     key={section.titulo}
