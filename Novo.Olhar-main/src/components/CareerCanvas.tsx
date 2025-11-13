@@ -215,7 +215,7 @@ const CareerCanvas = () => {
                       onChange={(e) =>
                         handleInputChange(section.id_canvas, e.target.value)
                       }
-                      placeholder={`Descreva ${section.placeholder.toLowerCase()}...`}
+                      placeholder={` ${section.placeholder.toLowerCase()}...`}
                       className="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </CardContent>
