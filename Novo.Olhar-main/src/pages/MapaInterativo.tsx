@@ -18,9 +18,9 @@ L.Icon.Default.mergeOptions({
 });
 
 const MapaInterativo = () => {
-  const [selectedCategory, setSelectedCategory] = useState("todos");
-  const [selectedCity, setSelectedCity] = useState("todas");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("todos");
+  const [selectedCity, setSelectedCity] = useState<string>("todas");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [cities, setCities] = useState<string[]>([]);
   const [locais, setLocais] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
@@ -29,11 +29,11 @@ const MapaInterativo = () => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.Marker[]>([]);
 
-  // 📍 Recebe local vindo da página "EncontreApoio"
+  // Recebe local vindo da página "EncontreApoio"
   const location = useLocation();
   const localSelecionado = location.state?.local;
 
-  // 🔹 Busca locais e extrai cidades únicas
+  // Busca locais e extrai cidades únicas
   const getLocais = () => {
     axios
       .get("http://localhost:3001/api/locais")
@@ -48,7 +48,7 @@ const MapaInterativo = () => {
       .catch((err) => console.error("Erro ao buscar locais", err));
   };
 
-  // 🔹 Busca categorias
+  // Busca categorias
   const getCategorias = () => {
     axios
       .get("http://localhost:3001/api/categorias")
@@ -61,63 +61,66 @@ const MapaInterativo = () => {
     getLocais();
   }, []);
 
-  // 🔹 Botões de categoria
-  const categoryButtons = [
-    { id_categoria: "todos", nome: "Todos", color: "gray" },
-    ...categorias.map((cat) => ({
-      id_categoria: cat.id_categoria,
-      nome: cat.nome,
-      color: cat.color,
-    })),
-  ];
+  // Mapa de cores (nome -> hex) usado para marcadores e badges
+  const colorMap: Record<string, string> = {
+    blue: "#3B82F6",
+    green: "#10B981",
+    purple: "#8B5CF6",
+    red: "#EF4444",
+    gray: "#6B7280",
+  };
 
-  // 🔹 Filtragem principal
+  // Filtragem principal (corrige comparação de tipos convertendo IDs para string)
   const filteredLocations = locais.filter((local) => {
+    const localCatId =
+      local.id_categoria !== undefined
+        ? String(local.id_categoria)
+        : local.categoria?.id_categoria !== undefined
+          ? String(local.categoria.id_categoria)
+          : undefined;
+
     const matchesCategory =
       selectedCategory === "todos" ||
-      local.id_categoria === selectedCategory ||
-      local.categoria?.id_categoria === selectedCategory;
+      localCatId === selectedCategory;
 
     const matchesSearch =
-      local.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      local.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+      (local.nome || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (local.descricao || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
     const matchesCity =
       selectedCity === "todas" ||
-      local.cidade?.toLowerCase() === selectedCity.toLowerCase();
+      (local.cidade || "").toLowerCase() === selectedCity.toLowerCase();
 
     return matchesCategory && matchesSearch && matchesCity;
   });
 
-  // 🔹 Cor da categoria
-  const getCategoryColor = (local) => {
+  // Retorna a cor hex da categoria de um local (ou fallback)
+  const getCategoryHex = (local) => {
     const categoria =
       local.categoria ||
-      categorias.find((c) => c.id_categoria === local.id_categoria);
-    return categoria ? categoria.color : "gray";
+      categorias.find((c) => String(c.id_categoria) === String(local.id_categoria));
+
+    const colorKey = categoria?.color || "gray";
+    return colorMap[colorKey] || colorMap.gray;
   };
 
-  // 🔹 Ícone personalizado
+  // Ícone personalizado (usa hex direto)
   const getMarkerIcon = (local) => {
-    const color = getCategoryColor(local);
-    const colorMap: Record<string, string> = {
-      blue: "#3B82F6",
-      green: "#10B981",
-      purple: "#8B5CF6",
-      red: "#EF4444",
-      gray: "#6B7280",
-    };
+    const hex = getCategoryHex(local);
 
     return L.divIcon({
       className: "custom-div-icon",
-      html: `<div style="background-color: ${colorMap[color] || colorMap.gray
-        }; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+      html: `<div style="background-color: ${hex}; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
       iconSize: [25, 25],
       iconAnchor: [12, 12],
     });
   };
 
-  // 🔹 Inicializa o mapa
+  // Inicializa o mapa
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -136,7 +139,7 @@ const MapaInterativo = () => {
     };
   }, []);
 
-  // 🔹 Atualiza marcadores com base no filtro
+  // Atualiza marcadores com base no filtro
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -146,6 +149,9 @@ const MapaInterativo = () => {
     markersRef.current = [];
 
     filteredLocations.forEach((local) => {
+      // evita marcadores com coordenadas inválidas
+      if (!local.latitude || !local.longitude) return;
+
       const marker = L.marker([local.latitude, local.longitude], {
         icon: getMarkerIcon(local),
       }).addTo(mapRef.current!);
@@ -188,13 +194,12 @@ const MapaInterativo = () => {
       const group = new L.FeatureGroup(markersRef.current);
       mapRef.current.fitBounds(group.getBounds().pad(0.1));
     }
-  }, [filteredLocations]);
+  }, [filteredLocations, categorias]);
 
-  // 🔹 Centraliza o mapa se vier um local selecionado da página anterior
+  // Centraliza o mapa se vier um local selecionado da página anterior
   useEffect(() => {
     if (!localSelecionado || !mapRef.current) return;
 
-    // Desestruturação segura
     const {
       latitude,
       longitude,
@@ -205,15 +210,13 @@ const MapaInterativo = () => {
       bairro,
       cidade,
       estado,
-      telefone
+      telefone,
     } = localSelecionado;
 
-    // Remove marcador anterior (caso já exista um)
     if (mapRef.current._highlightMarker) {
       mapRef.current.removeLayer(mapRef.current._highlightMarker);
     }
 
-    // Ícone de destaque
     const highlightIcon = L.divIcon({
       className: "custom-div-icon",
       html: `
@@ -230,13 +233,10 @@ const MapaInterativo = () => {
       iconAnchor: [15, 15],
     });
 
-    // Adiciona o marcador ao mapa
     const marker = L.marker([latitude, longitude], { icon: highlightIcon }).addTo(mapRef.current);
 
-    // Armazena referência do marcador para limpeza posterior
     mapRef.current._highlightMarker = marker;
 
-    // Monta popup com formatação e ícones
     const popupHtml = `
     <div class="p-3 min-w-[260px]">
       <h3 class="font-bold text-lg mb-2">${nome}</h3>
@@ -261,13 +261,10 @@ const MapaInterativo = () => {
     </div>
   `;
 
-    // Associa o popup
     marker.bindPopup(popupHtml).openPopup();
 
-    // Centraliza o mapa no local
     mapRef.current.setView([latitude, longitude], 15);
 
-    // Limpa o marcador quando o componente for desmontado
     return () => {
       if (mapRef.current && mapRef.current._highlightMarker) {
         mapRef.current.removeLayer(mapRef.current._highlightMarker);
@@ -276,13 +273,12 @@ const MapaInterativo = () => {
     };
   }, [localSelecionado]);
 
-
-  // 🔹 Centraliza o mapa na cidade selecionada
+  // Centraliza o mapa na cidade selecionada
   useEffect(() => {
     if (!mapRef.current || selectedCity === "todas") return;
 
     const cityLocals = locais.filter(
-      (l) => l.cidade?.toLowerCase() === selectedCity.toLowerCase()
+      (l) => (l.cidade || "").toLowerCase() === selectedCity.toLowerCase()
     );
     if (cityLocals.length > 0) {
       const group = new L.FeatureGroup(
@@ -290,10 +286,10 @@ const MapaInterativo = () => {
       );
       mapRef.current.fitBounds(group.getBounds().pad(0.2));
     }
-  }, [selectedCity]);
+  }, [selectedCity, locais]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white ">
       <Navigation />
 
       {/* Hero */}
@@ -308,9 +304,10 @@ const MapaInterativo = () => {
 
       {/* Filtros */}
       <section className="px-6 pb-6 border-b border-gray-200">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
+
           {/* Busca */}
-          <div className="relative w-full max-w-md">
+          <div className="relative w-full md:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
@@ -321,57 +318,70 @@ const MapaInterativo = () => {
             />
           </div>
 
-          {/* Filtro por cidade */}
-          <div className="flex items-center space-x-2">
-            <Filter className="text-gray-400 h-5 w-5" />
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="todas">Todas as cidades</option>
-              {cities.map((cidade, index) => (
-                <option key={index} value={cidade}>
-                  {cidade}
-                </option>
-              ))}
-            </select>
+          {/* Agrupamento de filtros */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Filtro por cidade */}
+            <div className="flex items-center space-x-2 w-full sm:w-[200px]">
+              <Filter className="text-gray-400 h-5 w-5" />
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="todas">Todas as cidades</option>
+                {cities.map((cidade, index) => (
+                  <option key={index} value={cidade}>
+                    {cidade}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filtro por categoria */}
+            <div className="flex items-center space-x-2 w-full sm:w-[200px]">
+              <Filter className="text-gray-400 h-5 w-5" />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="todos">Todas as categorias</option>
+                {categorias.map((cat) => (
+                  <option key={cat.id_categoria} value={String(cat.id_categoria)}>
+                    {cat.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Categorias */}
-          <div className="flex flex-wrap gap-2">
-            {categoryButtons.map((cat) => (
-              <button
-                key={cat.id_categoria}
-                onClick={() => setSelectedCategory(cat.id_categoria)}
-                className={`px-4 py-2 rounded-lg font-medium transition ${selectedCategory === cat.id_categoria
-                  ? `bg-${cat.color}-500 text-white`
-                  : `bg-${cat.color}-100 text-${cat.color}-700 hover:bg-${cat.color}-200`
-                  }`}
-              >
-                {cat.nome}
-              </button>
-            ))}
-          </div>
         </div>
       </section>
+
 
       {/* Mapa e Lista */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
         {/* Mapa */}
         <div
           ref={mapContainerRef}
-          className="bg-white rounded-xl shadow-lg h-[500px]"
+          className="bg-white rounded-xl shadow-lg h-[500px] relative z-[10]"
         />
 
         {/* Lista de locais */}
-        <div>
+        <div className="h-[500px] overflow-y-auto">
           <h3 className="text-xl font-bold mb-4 text-gray-800">
             Locais Encontrados ({filteredLocations.length})
           </h3>
 
           {filteredLocations.map((local) => {
-            const color = getCategoryColor(local);
+            const hex = getCategoryHex(local);
+            const categoryName =
+              local.categoria?.nome ||
+              categorias.find(
+                (c) => String(c.id_categoria) === String(local.id_categoria)
+              )?.nome ||
+              "Sem categoria";
+
             return (
               <div
                 key={local.id_local}
@@ -383,12 +393,16 @@ const MapaInterativo = () => {
                 <div className="flex justify-between mb-2">
                   <h4 className="font-bold text-gray-800">{local.nome}</h4>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs bg-${color}-100 text-${color}-700`}
+                    style={{
+                      backgroundColor: `${hex}22`, // versão translúcida do hex
+                      color: hex,
+                      padding: "4px 10px",
+                      borderRadius: 9999,
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }}
                   >
-                    {local.categoria?.nome ||
-                      categorias.find(
-                        (c) => c.id_categoria === local.id_categoria
-                      )?.nome}
+                    {categoryName}
                   </span>
                 </div>
                 <p className="text-gray-600 text-sm mb-2">{local.descricao}</p>

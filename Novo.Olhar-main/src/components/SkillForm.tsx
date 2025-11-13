@@ -7,6 +7,7 @@ import html2canvas from "html2canvas";
 interface SkillFormProps {
   skill: {
     nome: string;
+    titulo_modal: string;
     descricao_modal: string;
     importance: string;
   };
@@ -101,7 +102,7 @@ const SkillForm: React.FC<SkillFormProps> = ({ skill, onClose }) => {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {skill.nome}
+                  {skill.titulo_modal}
                 </h2>
                 <p className="text-gray-600 mb-2">{skill.descricao_modal}</p>
                 <p className="text-sm text-green-600 font-medium">
